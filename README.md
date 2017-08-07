@@ -23,3 +23,7 @@ $ open index.html
 $ npm install
 $ npm run watch
 ```
+
+### TODO
+
+- [ ] responsive page for mobile
