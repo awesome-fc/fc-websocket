@@ -1,8 +1,8 @@
 {
-  "name": "react-term",
-  "version": "0.0.1",
-  "description": "",
-  "main": "reactcart.js",
+  "name": "give-me-a-shell-web",
+  "version": "1.0.0",
+  "description": "Give me a shell, I can...",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "watchify -t reactify ./src/app.js -o ./build/main.min.js -v",
@@ -13,6 +13,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.16.2",
     "babelify": "^5.0.4",
     "browserify": "^9.0.3",
     "react": "^0.13.1",
