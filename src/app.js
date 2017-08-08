@@ -6,6 +6,9 @@ var ShellApi = 'http://api.rockuw.com/shell';
 
 var App = React.createClass({
   getInitialState: function() {
+    this.offset = 0
+    this.cmds = []
+
     return {
       history: [],
       prompt: Prompt,
@@ -17,6 +20,8 @@ var App = React.createClass({
   execShellCommand: function(cmd) {
     var that = this;
     that.setState({'prompt': ''})
+    that.offset = 0
+    that.cmds.push(cmd)
     axios.get(ShellApi+'?cmd=' + encodeURIComponent(cmd)).then(function (res) {
       console.log(res);
       (res.data+'').split('\n').forEach(function(line) {
@@ -57,15 +62,29 @@ var App = React.createClass({
     container.scrollTop = el.scrollHeight;
   },
   handleInput: function(e) {
-    if (e.key === "Enter") {
-      var input_text = this.refs.term.getDOMNode().value;
-      var input_array = input_text.split(' ');
-      var input = input_array[0];
-      var arg = input_array[1];
+    switch (e.key) {
+      case "Enter":
+        var input_text = this.refs.term.getDOMNode().value;
+        var input_array = input_text.split(' ');
+        var input = input_array[0];
+        var arg = input_array[1];
 
-      this.addHistory(this.state.prompt + " " + input_text);
-      this.execShellCommand(input_text);
-      this.clearInput();
+        this.addHistory(this.state.prompt + " " + input_text);
+        this.execShellCommand(input_text);
+        this.clearInput();
+        break
+      case 'ArrowUp':
+        if (this.offset === 0) {
+          this.lastCmd = this.refs.term.getDOMNode().value
+        }
+
+        this.refs.term.getDOMNode().value = this.cmds[this.cmds.length - ++this.offset] || this.cmds[(this.offset = this.cmds.length, 0)] || this.lastCmd
+        return false
+      case 'ArrowDown':
+        var history = this.state.history.slice(1)
+
+        this.refs.term.getDOMNode().value = this.cmds[this.cmds.length - --this.offset] || (this.offset = 0, this.lastCmd)
+        return false
     }
   },
   clearInput: function() {
@@ -91,7 +110,7 @@ var App = React.createClass({
         {output}
         <p>
           <span className="prompt">{this.state.prompt}</span>
-          <input type="text" onKeyPress={this.handleInput} ref="term" />
+          <input type="text" onKeyDown={this.handleInput} ref="term" />
         </p>
       </div>
     )
