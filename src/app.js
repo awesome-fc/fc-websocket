@@ -19,7 +19,7 @@ var App = React.createClass({
     that.setState({'prompt': ''})
     axios.get(ShellApi+'?cmd='+cmd).then(function (res) {
       console.log(res);
-      res.data.split('\n').forEach(function(line) {
+      (res.data+'').split('\n').forEach(function(line) {
         that.addHistory(line);
       });
       that.setState({'prompt': Prompt})
