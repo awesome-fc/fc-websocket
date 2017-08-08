@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "watchify -t reactify ./src/app.js -o ./build/main.min.js -v",
     "dist": "npm run remove-dist && npm run build-standalone",
-    "remove-dist": "rm build/*.js",
+    "remove-dist": "rm -f build/*.js",
     "build-standalone": "NODE_ENV=production browserify -t reactify ./src/app.js | uglifyjs -mc > build/main.min.js"
   },
   "author": "",
