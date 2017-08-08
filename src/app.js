@@ -1,8 +1,8 @@
 var React = require('react');
 var axios = require('axios');
 
-const Prompt = 'fc@aliyun $ ';
-const ShellApi = 'http://api.rockuw.com/shell';
+var Prompt = 'fc@aliyun $ ';
+var ShellApi = 'http://api.rockuw.com/shell';
 
 var App = React.createClass({
   getInitialState: function() {
@@ -17,7 +17,7 @@ var App = React.createClass({
   execShellCommand: function(cmd) {
     var that = this;
     that.setState({'prompt': ''})
-    axios.get(ShellApi+'?cmd='+cmd).then(function (res) {
+    axios.get(ShellApi+'?cmd=' + encodeURIComponent(cmd)).then(function (res) {
       console.log(res);
       (res.data+'').split('\n').forEach(function(line) {
         that.addHistory(line);
