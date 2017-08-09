@@ -1,11 +1,14 @@
 var React = require('react');
 var axios = require('axios');
 
-const Prompt = 'fc@aliyun $ ';
-const ShellApi = 'http://api.rockuw.com/shell';
+var Prompt = 'fc@aliyun $ ';
+var ShellApi = 'http://api.rockuw.com/shell';
 
 var App = React.createClass({
   getInitialState: function() {
+    this.offset = 0
+    this.cmds = []
+
     return {
       history: [],
       prompt: Prompt,
@@ -17,11 +20,11 @@ var App = React.createClass({
   execShellCommand: function(cmd) {
     var that = this;
     that.setState({'prompt': ''})
-    axios.get(ShellApi+'?cmd='+cmd).then(function (res) {
+    that.offset = 0
+    that.cmds.push(cmd)
+    axios.get(ShellApi+'?cmd=' + encodeURIComponent(cmd)).then(function (res) {
       console.log(res);
-      (res.data+'').split('\n').forEach(function(line) {
-        that.addHistory(line);
-      });
+      that.addHistory((typeof res.data === 'string' ? res.data : res.request.responseText).split('\n'));
       that.setState({'prompt': Prompt})
     }).catch(function(err) {
       var errText = '';
@@ -51,29 +54,55 @@ var App = React.createClass({
     term.focus();
   },
   componentDidUpdate: function() {
-    var el = React.findDOMNode(this);
-    //var container = document.getElementsByClassName('container')[0];
-    var container = document.getElementById("main");
-    container.scrollTop = el.scrollHeight;
+    var container = document.getElementById('holder')
+    container.scrollTop = container.scrollHeight
   },
   handleInput: function(e) {
-    if (e.key === "Enter") {
-      var input_text = this.refs.term.getDOMNode().value;
-      var input_array = input_text.split(' ');
-      var input = input_array[0];
-      var arg = input_array[1];
+    switch (e.key) {
+      case "Enter":
+        var input_text = this.refs.term.getDOMNode().value;
 
-      this.addHistory(this.state.prompt + " " + input_text);
-      this.execShellCommand(input_text);
-      this.clearInput();
+        if ((input_text.replace(/\s/g, '')).length < 1) {
+          return
+        }
+
+        if (input_text === 'clear') {
+          this.state.history = []
+          this.showWelcomeMsg()
+          this.clearInput()
+          this.offset = 0
+          this.cmds.length = 0
+          return
+        }
+
+        this.addHistory(this.state.prompt + " " + input_text);
+        this.execShellCommand(input_text);
+        this.clearInput();
+        break
+      case 'ArrowUp':
+        if (this.offset === 0) {
+          this.lastCmd = this.refs.term.getDOMNode().value
+        }
+
+        this.refs.term.getDOMNode().value = this.cmds[this.cmds.length - ++this.offset] || this.cmds[(this.offset = this.cmds.length, 0)] || this.lastCmd
+        return false
+      case 'ArrowDown':
+        this.refs.term.getDOMNode().value = this.cmds[this.cmds.length - --this.offset] || (this.offset = 0, this.lastCmd)
+        return false
     }
   },
   clearInput: function() {
     this.refs.term.getDOMNode().value = "";
   },
   addHistory: function(output) {
-    var history = this.state.history;
-    history.push(output)
+    var history = this.state.history.slice(0)
+
+    if (output instanceof Array) {
+      history.push.apply(history, output)
+    } else {
+      history.push(output)
+    }
+
     this.setState({
       'history': history
     });
@@ -91,7 +120,7 @@ var App = React.createClass({
         {output}
         <p>
           <span className="prompt">{this.state.prompt}</span>
-          <input type="text" onKeyPress={this.handleInput} ref="term" />
+          <input type="text" onKeyDown={this.handleInput} ref="term" />
         </p>
       </div>
     )
