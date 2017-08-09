@@ -24,9 +24,7 @@ var App = React.createClass({
     that.cmds.push(cmd)
     axios.get(ShellApi+'?cmd=' + encodeURIComponent(cmd)).then(function (res) {
       console.log(res);
-      (res.data+'').split('\n').forEach(function(line) {
-        that.addHistory(line);
-      });
+      that.addHistory((res.data + '').split('\n'));
       that.setState({'prompt': Prompt})
     }).catch(function(err) {
       var errText = '';
@@ -56,18 +54,26 @@ var App = React.createClass({
     term.focus();
   },
   componentDidUpdate: function() {
-    var el = React.findDOMNode(this);
-    //var container = document.getElementsByClassName('container')[0];
-    var container = document.getElementById("main");
-    container.scrollTop = el.scrollHeight;
+    var container = document.getElementById('holder')
+    container.scrollTop = container.scrollHeight
   },
   handleInput: function(e) {
     switch (e.key) {
       case "Enter":
         var input_text = this.refs.term.getDOMNode().value;
-        var input_array = input_text.split(' ');
-        var input = input_array[0];
-        var arg = input_array[1];
+
+        if ((input_text.replace(/\s/g, '')).length < 1) {
+          return
+        }
+
+        if (input_text === 'clear') {
+          this.state.history = []
+          this.showWelcomeMsg()
+          this.clearInput()
+          this.offset = 0
+          this.cmds.length = 0
+          return
+        }
 
         this.addHistory(this.state.prompt + " " + input_text);
         this.execShellCommand(input_text);
@@ -81,8 +87,6 @@ var App = React.createClass({
         this.refs.term.getDOMNode().value = this.cmds[this.cmds.length - ++this.offset] || this.cmds[(this.offset = this.cmds.length, 0)] || this.lastCmd
         return false
       case 'ArrowDown':
-        var history = this.state.history.slice(1)
-
         this.refs.term.getDOMNode().value = this.cmds[this.cmds.length - --this.offset] || (this.offset = 0, this.lastCmd)
         return false
     }
@@ -91,8 +95,14 @@ var App = React.createClass({
     this.refs.term.getDOMNode().value = "";
   },
   addHistory: function(output) {
-    var history = this.state.history;
-    history.push(output)
+    var history = this.state.history.slice(0)
+
+    if (output instanceof Array) {
+      history.push.apply(history, output)
+    } else {
+      history.push(output)
+    }
+
     this.setState({
       'history': history
     });
