@@ -24,7 +24,7 @@ var App = React.createClass({
     that.cmds.push(cmd)
     axios.get(ShellApi+'?cmd=' + encodeURIComponent(cmd)).then(function (res) {
       console.log(res);
-      that.addHistory((res.data + '').split('\n'));
+      that.addHistory((typeof res.data === 'string' ? res.data : res.request.responseText).split('\n'));
       that.setState({'prompt': Prompt})
     }).catch(function(err) {
       var errText = '';
