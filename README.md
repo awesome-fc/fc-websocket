@@ -1,13 +1,12 @@
-# Give me a shell, I can...
+# When FC meets websocket...
 
-Instantly run a linux shell in the cloud as your need, discard it when
-you're done.
+Develop an instant co-editor with ONLY [133 lines of code](code/index.js). Serverless, free-tier, pay-as-your-usage, and... Did we mention it also scales?
 
-Powered by Aliyun [FunctionCompute](https://www.aliyun.com/product/fc)
+Powered by Aliyun [FunctionCompute](https://www.aliyun.com/product/fc) & [ApiGateway](https://www.aliyun.com/product/apigateway)
 
 ![img](shot.png)
 
-Demo - http://fc-public.oss-cn-hangzhou.aliyuncs.com/demo/shell/index.html
+Demo - http://fc-public.oss-cn-hangzhou.aliyuncs.com/demo/co-edit/index.html?id=fc
 
 ### Run
 
