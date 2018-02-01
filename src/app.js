@@ -1,11 +1,79 @@
 var React = require('react');
 var axios = require('axios');
+const uuid = require('uuid');
+const queryString = require('query-string');
+const util = require('util');
 
 var Prompt = 'fc@aliyun $ ';
-var ShellApi = 'http://api.rockuw.com/shell';
+var ShellApi = 'http://tl.mofangdegisn.cn/send';
+var docId = null;
+var deviceId = null;
+
+var testWs = function(app) {
+  const ws = new WebSocket('ws://tl.mofangdegisn.cn:8080');
+  var now = new Date();
+
+  var reg = {
+    method: 'GET',
+    host: 'tl.mofangdegisn.cn:8080',
+    querys: {
+      'id': docId,
+    },
+    headers: {
+      'x-ca-websocket_api_type': ['REGISTER'],
+      'x-ca-seq': ['0'],
+      'x-ca-nonce': [uuid.v4().toString()],
+      'date': [now.toUTCString()],
+      'x-ca-timestamp': [now.getTime().toString()],
+      'CA_VERSION': ['1'],
+    },
+    path: '/r',
+    body: '',
+  };
+
+  ws.onopen = function open() {
+    console.log('open:');
+    ws.send('RG#' + deviceId);
+  };
+
+  var registered = false;
+  var hbStarted = false;
+
+  ws.onmessage = function incoming(event) {
+    console.log('data:');
+    console.log(event.data);
+
+    if (event.data.startsWith('NF#')) {
+      var msg = JSON.parse(event.data.substr(3));
+      app.addHistory(
+        util.format('%s (%s) %s',
+                    Prompt, msg.from,
+                    decodeURIComponent(msg.message.toString())));
+      app.setState({'prompt': Prompt});
+    }
+
+    if (!registered) {
+      registered = true;
+      ws.send(JSON.stringify(reg));
+    }
+
+    if (!hbStarted && event.data.startsWith('RO#')) {
+      hbStarted = true;
+      setInterval(function() {
+        ws.send('H1');
+      }, 15*1000);
+    }
+  };
+};
 
 var App = React.createClass({
   getInitialState: function() {
+    deviceId = uuid.v4().replace(/-/g, '').substr(0, 8);
+    console.log('device id:', deviceId);
+    docId = queryString.parse(queryString.extract(window.location.href))['id'];
+    console.log('doc id:', docId);
+    testWs(this);
+
     this.offset = 0
     this.cmds = []
 
@@ -22,10 +90,11 @@ var App = React.createClass({
     that.setState({'prompt': ''})
     that.offset = 0
     that.cmds.push(cmd)
-    axios.get(ShellApi+'?cmd=' + encodeURIComponent(cmd)).then(function (res) {
+    var url = util.format('%s?id=%s&msg=%s&deviceid=%s', ShellApi, docId, cmd, deviceId);
+    axios.get(url).then(function (res) {
       console.log(res);
-      that.addHistory((typeof res.data === 'string' ? res.data : res.request.responseText).split('\n'));
-      that.setState({'prompt': Prompt})
+      //that.addHistory((typeof res.data === 'string' ? res.data : res.request.responseText).split('\n'));
+      that.setState({'prompt': Prompt});
     }).catch(function(err) {
       var errText = '';
       if (err.response) {
@@ -40,7 +109,7 @@ var App = React.createClass({
     });
   },
   showWelcomeMsg: function() {
-    this.addHistory('Welcome to FunctionCompute! Have fun!');
+    this.addHistory(deviceId + ', Welcome to FunctionCompute! Have fun!');
   },
   openLink: function(link) {
     return function() {

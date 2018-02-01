@@ -16,10 +16,12 @@
     "axios": "^0.16.2",
     "babelify": "^5.0.4",
     "browserify": "^9.0.3",
+    "query-string": "^5.0.1",
     "react": "^0.13.1",
     "reactify": "^1.1.0",
     "uglify-js": "^2.4.20",
     "underscore": "^1.8.3",
+    "uuid": "^3.2.1",
     "watchify": "^3.1.0"
   }
 }
