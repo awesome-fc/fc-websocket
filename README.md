@@ -8,6 +8,10 @@ Powered by Aliyun [FunctionCompute](https://www.aliyun.com/product/fc) & [ApiGat
 
 Demo - http://fc-public.oss-cn-hangzhou.aliyuncs.com/demo/co-edit/index.html?id=fc
 
+### Architecture
+
+![img](arch.png)
+
 ### Run
 
 ```
