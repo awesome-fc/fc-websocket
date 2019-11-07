@@ -3,6 +3,7 @@ var axios = require('axios');
 const uuid = require('uuid');
 const queryString = require('query-string');
 const util = require('util');
+const register = require('./ws');
 
 var Prompt = 'fc@aliyun $ ';
 var ShellApi = 'http://tl.mofangdegisn.cn/send';
@@ -72,7 +73,7 @@ var App = React.createClass({
     console.log('device id:', deviceId);
     docId = queryString.parse(queryString.extract(window.location.href))['id'];
     console.log('doc id:', docId);
-    testWs(this);
+    register(this, docId, deviceId, 'dummy', function() {}, function() {});
 
     this.offset = 0
     this.cmds = []
@@ -90,8 +91,12 @@ var App = React.createClass({
     that.setState({'prompt': ''})
     that.offset = 0
     that.cmds.push(cmd)
-    var url = util.format('%s?id=%s&msg=%s&deviceid=%s', ShellApi, docId, cmd, deviceId);
-    axios.get(url).then(function (res) {
+      var url = util.format('%s?docId=%s&deviceId=%s', ShellApi, docId, deviceId);
+      axios.post(url, cmd, {
+          headers: {
+              'Content-Type': 'application/octet-stream'
+          },
+      }).then(function (res) {
       console.log(res);
       //that.addHistory((typeof res.data === 'string' ? res.data : res.request.responseText).split('\n'));
       that.setState({'prompt': Prompt});
