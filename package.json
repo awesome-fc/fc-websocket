@@ -13,7 +13,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.16.2",
+    "axios": "^0.21.1",
     "babelify": "^5.0.4",
     "browserify": "^9.0.3",
     "query-string": "^5.0.1",
